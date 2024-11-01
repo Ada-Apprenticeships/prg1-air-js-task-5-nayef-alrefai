@@ -57,30 +57,34 @@ class Flight {
         }
     }
 
-    getRunningCost() { // Method to calculate the running cost per seat based on aircraft data
+    getRunningCost() {
         const aircraftRow = this.aircraftData.find(function(row) {
             return row[0] === this.aircraftType;
-        }, this); 
-
+        }, this);
+        
         if (aircraftRow) {
-            return Number(aircraftRow[1].replace('£', '')); // Remove £ sign and convert to number
+            console.log("Aircraft Row Found:", aircraftRow);
+            return Number(aircraftRow[1].replace('£', '')); // Remove £ sign
         } else {
-            return null; 
+            console.error("Aircraft type not found");
+            return null;
         }
     }
 
     getTotalSeats() {
         const aircraftRow = this.aircraftData.find(function(row) {
             return row[0] === this.aircraftType;
-        }, this); 
-
+        }, this);
+        
         if (aircraftRow) {
+            console.log("Aircraft Row for Seats:", aircraftRow);
             const economySeats = Number(aircraftRow[3]);
             const businessSeats = Number(aircraftRow[4]);
             const firstClassSeats = Number(aircraftRow[5]);
-            return economySeats + businessSeats + firstClassSeats; // Total seats
+            return economySeats + businessSeats + firstClassSeats;
         } else {
-            return null; // Aircraft type not found
+            console.error("Aircraft type not found");
+            return null;
         }
     }
 
