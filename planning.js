@@ -21,10 +21,23 @@ function readCsv(filename, delimiter = ',') {
     }
 }
 
-// Usage example
-const airportsData = readCsv('airports.csv');
-if (airportsData) {
-    airportsData.forEach(row => {
-        console.log(row);
-    });
+class Flight {
+    constructor(ukAirport, overseasAirport, aircraftType, economySeatsBooked, businessSeatsBooked, firstClassSeatsBooked, economyPrice, businessPrice, firstClassPrice, airportsData, aircraftData) {
+        this.ukAirport = ukAirport;
+        this.overseasAirport = overseasAirport;
+        this.aircraftType = aircraftType;
+        this.economySeatsBooked = economySeatsBooked;
+        this.businessSeatsBooked = businessSeatsBooked;
+        this.firstClassSeatsBooked = firstClassSeatsBooked;
+        this.economyPrice = economyPrice;
+        this.businessPrice = businessPrice;
+        this.firstClassPrice = firstClassPrice;
+
+        this.airportsData = airportsData;
+        this.aircraftData = aircraftData;
+
+        this.distance = this.getDistance();
+        this.runningCostPerSeat = this.getRunningCost();
+        this.totalSeats = this.getTotalSeats();
+    }
 }
