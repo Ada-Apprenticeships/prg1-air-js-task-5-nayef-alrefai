@@ -41,108 +41,82 @@ class Flight {
         this.totalSeats = this.getTotalSeats();
     }
 
-    getDistance() { // Method to calculate the distance of the flight based on airport data
-        const airportRow = this.airportsData.find(function(row) {// Find the row in airportsData which matches the overseas airport
-            return row[0] === this.overseasAirport;
-        }, this); // Use the class context ('this') inside the function by binding it
-
-        if (airportRow) {
-            if (this.ukAirport === 'MAN') {
-                return Number(airportRow[2]); // Distance from Manchester
-            } else {
-                return Number(airportRow[3]); // Distance from Gatwick
-            }
-        } else {
-            return null; //Return null if the airport is not found
-        }
+    getDistance() {
+        const airportRow = this.airportsData.find(row => row[0] === this.overseasAirport);
+        return airportRow ? (this.ukAirport === 'MAN' ? Number(airportRow[2]) : Number(airportRow[3])) : null;
     }
 
     getRunningCost() {
-        const aircraftRow = this.aircraftData.find(function(row) {
-            return row[0] === this.aircraftType;
-        }, this);
-        
-        if (aircraftRow) {
-            console.log("Aircraft Row Found:", aircraftRow);
-            return Number(aircraftRow[1].replace('£', '')); // Remove £ sign
-        } else {
-            console.error("Aircraft type not found");
-            return null;
-        }
+        const aircraftRow = this.aircraftData.find(row => row[0] === this.aircraftType);
+        return aircraftRow ? Number(aircraftRow[1].replace('£', '')) : null;
     }
 
     getTotalSeats() {
-        const aircraftRow = this.aircraftData.find(function(row) {
-            return row[0] === this.aircraftType;
-        }, this);
-        
-        if (aircraftRow) {
-            console.log("Aircraft Row for Seats:", aircraftRow);
-            const economySeats = Number(aircraftRow[3]);
-            const businessSeats = Number(aircraftRow[4]);
-            const firstClassSeats = Number(aircraftRow[5]);
-            return economySeats + businessSeats + firstClassSeats;
-        } else {
-            console.error("Aircraft type not found");
-            return null;
-        }
+        const aircraftRow = this.aircraftData.find(row => row[0] === this.aircraftType);
+        return aircraftRow ? (Number(aircraftRow[3]) + Number(aircraftRow[4]) + Number(aircraftRow[5])) : null;
     }
 
-    calculateIncome() { //Method to calculate the income from all the seats
-        const economyIncome = this.economySeatsBooked * this.economyPrice; // Income from economy seats
-        const businessIncome = this.businessSeatsBooked * this.businessPrice; // Income from business seats
-        const firstClassIncome = this.firstClassSeatsBooked * this.firstClassPrice; // Income from first-class seats
-        return economyIncome + businessIncome + firstClassIncome; // Total income
+    calculateIncome() {
+        return (this.economySeatsBooked * this.economyPrice) +
+               (this.businessSeatsBooked * this.businessPrice) +
+               (this.firstClassSeatsBooked * this.firstClassPrice);
     }
 
-    calculateCost() {  // Method to calculate the total cost of the flight
+    calculateCost() {
         const totalSeatsTaken = this.economySeatsBooked + this.businessSeatsBooked + this.firstClassSeatsBooked;
-        const costPerSeat = (this.runningCostPerSeat / 100) * this.distance; // Cost per seat based on distance
-        return costPerSeat * totalSeatsTaken; // Total cost
+        const costPerSeat = (this.runningCostPerSeat / 100) * this.distance;
+        return costPerSeat * totalSeatsTaken;
     }
 
-    calculateProfit() { // Method for calculating the profits
-        const income = this.calculateIncome(); // Get total income
-        const cost = this.calculateCost(); // Get total cost
-        return income - cost; // Profit = Income - Cost
+    calculateProfit() {
+        const income = this.calculateIncome();
+        const cost = this.calculateCost();
+        return income - cost;
+    }
+
+    getFlightDetails() {
+        const profit = this.calculateProfit();
+        return `Flight from ${this.ukAirport} to ${this.overseasAirport} (${this.aircraftType}):
+Total Income: £${this.calculateIncome().toFixed(2)}
+Total Cost: £${this.calculateCost().toFixed(2)}
+Profit: £${profit.toFixed(2)}
+---\n`;
     }
 }
 
-
-//TESTING METHODS
+// Load the CSV files
 const airportsData = readCsv('airports.csv');
 const aircraftData = readCsv('aeroplanes.csv');
+const validFlightData = readCsv('valid_flight_data.csv');
 
+// Function to test the Flight class with data from CSV and output to a .txt file
+function testFlightClassWithCSV(outputFile = 'flight_details.txt') {
+    // Clear the file contents initially
+    fs.writeFileSync(outputFile, 'Flight Details and Profit Analysis\n\n');
 
-const ukAirport = 'MAN'; 
-const overseasAirport = 'JFK'; 
-const aircraftType = 'Boeing 737'; 
-const economySeatsBooked = 100; 
-const businessSeatsBooked = 20; 
-const firstClassSeatsBooked = 10; 
-const economyPrice = 150; 
-const businessPrice = 300; 
-const firstClassPrice = 500; 
+    validFlightData.forEach(row => {
+        const [ukAirport, overseasAirport, aircraftType, economySeatsBooked, businessSeatsBooked, firstClassSeatsBooked, economyPrice, businessPrice, firstClassPrice] = row;
 
+        const flight = new Flight(
+            ukAirport,
+            overseasAirport,
+            aircraftType,
+            Number(economySeatsBooked),
+            Number(businessSeatsBooked),
+            Number(firstClassSeatsBooked),
+            Number(economyPrice),
+            Number(businessPrice),
+            Number(firstClassPrice),
+            airportsData,
+            aircraftData
+        );
 
-const flight = new Flight(
-    ukAirport,
-    overseasAirport,
-    aircraftType,
-    economySeatsBooked,
-    businessSeatsBooked,
-    firstClassSeatsBooked,
-    economyPrice,
-    businessPrice,
-    firstClassPrice,
-    airportsData,
-    aircraftData
-);
+        // Write flight details to the text file
+        fs.appendFileSync(outputFile, flight.getFlightDetails());
+    });
 
-console.log("Distance:", flight.getDistance());
-console.log("Running Cost Per Seat:", flight.getRunningCost());
-console.log("Total Seats:", flight.getTotalSeats());
-console.log("Total Income:", flight.calculateIncome());
-console.log("Total Cost:", flight.calculateCost());
-console.log("Profit:", flight.calculateProfit());
+    console.log(`Flight details written to ${outputFile}`);
+}
 
+// Run the test function
+testFlightClassWithCSV();
