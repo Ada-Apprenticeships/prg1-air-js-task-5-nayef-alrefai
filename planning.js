@@ -148,7 +148,6 @@ Profit: £${profit.toFixed(2)}
     }
 }
 
-// Load the CSV files
 const airportsData = readCsv('airports.csv');
 const aircraftData = readCsv('aeroplanes.csv');
 const validFlightData = readCsv('valid_flight_data.csv');
@@ -176,7 +175,7 @@ function testFlightClassWithCSV(outputFile = 'flight_details.txt') {
 
             fs.appendFileSync(outputFile, flight.getFlightDetails());
         } catch (error) {
-            fs.appendFileSync(outputFile, error.message + '\n'); // Log validation errors
+            fs.appendFileSync(outputFile, error.message + '\n'); // catch validation errors
         }
     });
 
