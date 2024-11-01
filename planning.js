@@ -38,68 +38,107 @@ class Flight {
 
         this.distance = this.getDistance();
         this.runningCostPerSeat = this.getRunningCost();
-        
+        this.totalSeats = this.getTotalSeats();
     }
 
-    getDistance() {
-        const airportRow = this.airportsData.find(function(row) {
+    getDistance() { // Method to calculate the distance of the flight based on airport data
+        const airportRow = this.airportsData.find(function(row) {// Find the row in airportsData which matches the overseas airport
             return row[0] === this.overseasAirport;
-        }, this); // bind 'this' to use the class instance
+        }, this); // Use the class context ('this') inside the function by binding it
 
         if (airportRow) {
             if (this.ukAirport === 'MAN') {
-                return Number(airportRow[2]); // Distance from MAN
+                return Number(airportRow[2]); // Distance from Manchester
             } else {
-                return Number(airportRow[3]); // Distance from LGW
+                return Number(airportRow[3]); // Distance from Gatwick
             }
         } else {
-            return null; // Airport not found
+            return null; //Return null if the airport is not found
         }
     }
 
-    getRunningCost() {
+    getRunningCost() { // Method to calculate the running cost per seat based on aircraft data
         const aircraftRow = this.aircraftData.find(function(row) {
             return row[0] === this.aircraftType;
-        }, this); // bind 'this' to use the class instance
+        }, this); 
 
         if (aircraftRow) {
-            return Number(aircraftRow[1].replace('£', '')); // Remove £ sign
+            return Number(aircraftRow[1].replace('£', '')); // Remove £ sign and convert to number
+        } else {
+            return null; 
+        }
+    }
+
+    getTotalSeats() {
+        const aircraftRow = this.aircraftData.find(function(row) {
+            return row[0] === this.aircraftType;
+        }, this); 
+
+        if (aircraftRow) {
+            const economySeats = Number(aircraftRow[3]);
+            const businessSeats = Number(aircraftRow[4]);
+            const firstClassSeats = Number(aircraftRow[5]);
+            return economySeats + businessSeats + firstClassSeats; // Total seats
         } else {
             return null; // Aircraft type not found
         }
     }
+
+    calculateIncome() { //Method to calculate the income from all the seats
+        const economyIncome = this.economySeatsBooked * this.economyPrice; // Income from economy seats
+        const businessIncome = this.businessSeatsBooked * this.businessPrice; // Income from business seats
+        const firstClassIncome = this.firstClassSeatsBooked * this.firstClassPrice; // Income from first-class seats
+        return economyIncome + businessIncome + firstClassIncome; // Total income
+    }
+
+    calculateCost() {  // Method to calculate the total cost of the flight
+        const totalSeatsTaken = this.economySeatsBooked + this.businessSeatsBooked + this.firstClassSeatsBooked;
+        const costPerSeat = (this.runningCostPerSeat / 100) * this.distance; // Cost per seat based on distance
+        return costPerSeat * totalSeatsTaken; // Total cost
+    }
+
+    calculateProfit() { // Method for calculating the profits
+        const income = this.calculateIncome(); // Get total income
+        const cost = this.calculateCost(); // Get total cost
+        return income - cost; // Profit = Income - Cost
+    }
 }
 
-// Sample airports data 
-const airportsData = [
-    ['JFK', 'John F Kennedy International', 5376, 5583],
-    ['ORY', 'Paris-Orly', 610, 325],
-    ['MAD', 'Madrid-Barajas', 1435, 1216],
-    ['AMS', 'Amsterdam Schiphol', 485, 363],
-    ['CAI', 'Cairo International', 3740, 3494],
-];
 
-// fake aircraft data
-const aircraftData = [
-    ['Medium narrow body', '£8', 2650, 160, 12, 0],
-    ['Large narrow body', '£7', 5600, 180, 20, 4],
-    ['Medium wide body', '£5', 4050, 380, 20, 8],
-];
+//TESTING METHODS
+const airportsData = readCsv('airports.csv');
+const aircraftData = readCsv('aeroplanes.csv');
 
-// Create an instance of Flight
+
+const ukAirport = 'MAN'; 
+const overseasAirport = 'JFK'; 
+const aircraftType = 'Boeing 737'; 
+const economySeatsBooked = 100; 
+const businessSeatsBooked = 20; 
+const firstClassSeatsBooked = 10; 
+const economyPrice = 150; 
+const businessPrice = 300; 
+const firstClassPrice = 500; 
+
+
 const flight = new Flight(
-    'MAN', 
-    'JFK', 
-    'Medium narrow body', 
-    150, 
-    12, 
-    2, 
-    399, 
-    999, 
-    1899, 
-    airportsData, 
-    aircraftData 
+    ukAirport,
+    overseasAirport,
+    aircraftType,
+    economySeatsBooked,
+    businessSeatsBooked,
+    firstClassSeatsBooked,
+    economyPrice,
+    businessPrice,
+    firstClassPrice,
+    airportsData,
+    aircraftData
 );
 
-const runningCost = flight.getRunningCost();
-console.log(`Running Cost per Seat: £${runningCost}`);
+console.log("Distance:", flight.getDistance());
+console.log("Running Cost Per Seat:", flight.getRunningCost());
+console.log("Total Seats:", flight.getTotalSeats());
+console.log("Total Income:", flight.calculateIncome());
+console.log("Total Cost:", flight.calculateCost());
+console.log("Profit:", flight.calculateProfit());
+
